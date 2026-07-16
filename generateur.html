@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QR CROSS — Générateur</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height:100vh; background:
+      radial-gradient(1200px 700px at 12% -15%, oklch(38% 0.09 220 / 0.9), transparent 60%),
+      radial-gradient(1000px 600px at 105% 5%, oklch(42% 0.11 170 / 0.55), transparent 55%),
+      radial-gradient(800px 500px at 50% 120%, oklch(30% 0.08 250 / 0.4), transparent 60%),
+      linear-gradient(180deg, oklch(14% 0.025 240) 0%, oklch(11% 0.02 240) 40%, oklch(8% 0.015 240) 100%);
+    color:#fff;
+  }
+  header {
+    padding:22px 56px; display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid oklch(30% 0.02 240 / 0.6); position:sticky; top:0;
+    background:oklch(12% 0.02 240 / 0.55); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); z-index:10;
+  }
+  header a.brand {
+    display:flex; align-items:center; background:linear-gradient(135deg, #ffffff, #f0f4f2);
+    border-radius:14px; padding:9px 18px; box-shadow:0 6px 24px rgba(0,0,0,0.35), 0 0 0 1px oklch(65% 0.13 170 / 0.25);
+    text-decoration:none; font-weight:700; color:#0c1420; font-size:15px; letter-spacing:0.5px;
+  }
+  nav a { color:oklch(70% 0.02 240); text-decoration:none; font-size:14px; font-weight:600; margin-left:36px; }
+  nav a:hover { color:oklch(65% 0.13 170); }
+
+  main { max-width:1100px; margin:0 auto; padding:64px 40px 100px; display:flex; gap:56px; flex-wrap:wrap; }
+  .col-form { flex:1; min-width:340px; }
+  h1 { font-size:30px; font-weight:600; margin:0 0 14px; }
+  p.lead { font-size:15px; color:oklch(65% 0.02 240); margin:0 0 28px; max-width:480px; }
+
+  label { display:block; font-size:12.5px; font-weight:600; color:oklch(65% 0.02 240); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+  .field { margin-bottom:20px; max-width:480px; }
+  input[type="text"], input[type="url"], select {
+    width:100%; background:oklch(15% 0.02 240); border:1px solid oklch(28% 0.02 240); border-radius:8px;
+    padding:12px 14px; font-family:'JetBrains Mono', monospace; font-size:13.5px; color:#fff;
+  }
+  select:disabled { opacity:0.5; cursor:not-allowed; }
+  input[type="color"] {
+    width:52px; height:38px; padding:2px; border-radius:8px; border:1px solid oklch(28% 0.02 240);
+    background:oklch(15% 0.02 240); cursor:pointer;
+  }
+  .row { display:flex; gap:20px; align-items:flex-end; flex-wrap:wrap; }
+  .row .field { flex:1; min-width:120px; }
+
+  .checkbox-row { display:flex; align-items:center; gap:10px; margin-bottom:24px; font-size:13.5px; color:oklch(80% 0.02 240); }
+  .checkbox-row input { width:16px; height:16px; accent-color: oklch(65% 0.13 170); }
+  .hint { font-size:12px; color:oklch(55% 0.02 240); margin-top:6px; max-width:480px; }
+
+  .actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
+  button {
+    font-family:inherit; font-size:14px; font-weight:700; padding:14px 24px; border-radius:8px;
+    border:none; cursor:pointer; white-space:nowrap;
+  }
+  button.primary { background:oklch(65% 0.13 170); color:#06120f; }
+  button.secondary { background:oklch(20% 0.02 240); color:#fff; border:1px solid oklch(30% 0.02 240); }
+  button:disabled { opacity:0.5; cursor:not-allowed; }
+
+  .col-preview {
+    width:300px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    background:oklch(15% 0.02 240); border:1px solid oklch(28% 0.02 240); border-radius:14px; padding:28px;
+    height:fit-content;
+  }
+  #qr-holder { display:flex; align-items:center; justify-content:center; min-height:256px; }
+  #qr-holder canvas, #qr-holder img { display:block; border-radius:8px; }
+  #qr-status { font-family:'JetBrains Mono', monospace; font-size:12.5px; color:oklch(65% 0.13 170); font-weight:700; margin-top:16px; text-align:center; }
+  #qr-status.error { color:#ff8a80; }
+
+  footer {
+    border-top:1px solid oklch(20% 0.02 240); padding:28px 56px; display:flex; justify-content:space-between;
+    font-family:'JetBrains Mono', monospace; font-size:12px; color:oklch(45% 0.02 240);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="brand" href="index.html">QR CROSS</a>
+  <nav>
+    <a href="index.html">L'application sécurisée</a>
+    <a href="generateur.html" style="color:oklch(65% 0.13 170);">Générer son QR CODE</a>
+  </nav>
+</header>
+
+<main>
+  <div class="col-form">
+    <h1>Générez un QR code sécurisé</h1>
+    <p class="lead">Collez votre lien, personnalisez l'apparence, puis téléchargez ou copiez votre QR code — logo QRCROSS inclus.</p>
+
+    <div class="field">
+      <label for="qr-text">Lien ou texte</label>
+      <input id="qr-text" type="text" placeholder="https://votre-site.com" value="https://github.com/manucros31-dot/createQRCROSS">
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="qr-size">Taille (px)</label>
+        <input id="qr-size" type="text" value="280">
+      </div>
+      <div class="field">
+        <label for="qr-color-dark">Couleur QR</label>
+        <input id="qr-color-dark" type="color" value="#000000">
+      </div>
+      <div class="field">
+        <label for="qr-color-light">Fond</label>
+        <input id="qr-color-light" type="color" value="#ffffff">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="qr-level">Niveau de correction d'erreur</label>
+      <select id="qr-level">
+        <option value="L">L — ~7%</option>
+        <option value="M">M — ~15%</option>
+        <option value="Q">Q — ~25%</option>
+        <option value="H" selected>H — ~30% (recommandé)</option>
+      </select>
+      <div class="hint">Avec le logo QRCROSS activé, le niveau H est forcé automatiquement : c'est le seul qui garantit la lisibilité malgré le logo.</div>
+    </div>
+
+    <div class="checkbox-row">
+      <input id="qr-logo" type="checkbox" checked>
+      <label for="qr-logo" style="text-transform:none; font-weight:400; color:inherit; margin:0;">Ajouter le logo QRCROSS (coche dans un carré, coin bas-droit)</label>
+    </div>
+
+    <div class="actions">
+      <button class="primary" onclick="generate()">Générer</button>
+      <button class="secondary" id="btn-download" onclick="downloadPng()" disabled>Télécharger PNG</button>
+      <button class="secondary" id="btn-copy" onclick="copyPng()" disabled>Copier PNG</button>
+    </div>
+  </div>
+
+  <div class="col-preview">
+    <div id="qr-holder"></div>
+    <div id="qr-status">Renseignez un lien puis cliquez sur « Générer »</div>
+  </div>
+</main>
+
+<footer>
+  <span>© 2026 QR CROSS</span>
+  <span>Protection anti-quishing</span>
+</footer>
+
+<script src="qrcode.min.js"></script>
+<script src="qrcross-logo.js"></script>
+<script>
+  let currentCanvas = null;
+
+  const levelSelect = document.getElementById('qr-level');
+  const logoCheckbox = document.getElementById('qr-logo');
+
+  function syncLevelWithLogo() {
+    if (logoCheckbox.checked) {
+      levelSelect.value = 'H';
+      levelSelect.disabled = true;
+    } else {
+      levelSelect.disabled = false;
+    }
+  }
+  logoCheckbox.addEventListener('change', syncLevelWithLogo);
+  syncLevelWithLogo();
+
+  function setStatus(msg, isError) {
+    const el = document.getElementById('qr-status');
+    el.textContent = msg;
+    el.classList.toggle('error', !!isError);
+  }
+
+  function generate() {
+    const text = document.getElementById('qr-text').value.trim();
+    const holder = document.getElementById('qr-holder');
+    const downloadBtn = document.getElementById('btn-download');
+    const copyBtn = document.getElementById('btn-copy');
+
+    if (!text) {
+      setStatus("Entrez un lien ou un texte d'abord", true);
+      downloadBtn.disabled = true;
+      copyBtn.disabled = true;
+      return;
+    }
+
+    let size = parseInt(document.getElementById('qr-size').value, 10);
+    if (!size || size < 100) size = 100;
+    if (size > 1000) size = 1000;
+
+    const useLogo = logoCheckbox.checked;
+    const level = useLogo ? 'H' : levelSelect.value;
+
+    holder.innerHTML = '';
+
+    try {
+      const qr = new QRCode(holder, {
+        text: text,
+        width: size,
+        height: size,
+        colorDark: document.getElementById('qr-color-dark').value,
+        colorLight: document.getElementById('qr-color-light').value,
+        correctLevel: QRCode.CorrectLevel[level]
+      });
+
+      const canvas = holder.querySelector('canvas');
+      const img = holder.querySelector('img');
+      if (!canvas) throw new Error('Le rendu QR (canvas) est indisponible dans ce navigateur.');
+
+      if (useLogo) {
+        drawQRCrossLogo(canvas, { ratio: 0.19 });
+      }
+
+      // Le module qrcode.min.js bascule sur un <img> après génération ;
+      // on force l'affichage du canvas (qui porte notre logo) à la place.
+      canvas.style.display = 'block';
+      if (img) img.style.display = 'none';
+
+      currentCanvas = canvas;
+      downloadBtn.disabled = false;
+      copyBtn.disabled = false;
+      setStatus(useLogo ? 'QR sécurisé généré ✓ (logo QRCROSS + niveau H)' : 'QR généré ✓');
+    } catch (err) {
+      console.error(err);
+      setStatus('Erreur : ' + err.message, true);
+      downloadBtn.disabled = true;
+      copyBtn.disabled = true;
+    }
+  }
+
+  function downloadPng() {
+    if (!currentCanvas) return;
+    const link = document.createElement('a');
+    link.download = 'qrcross.png';
+    link.href = currentCanvas.toDataURL('image/png');
+    link.click();
+  }
+
+  function copyPng() {
+    if (!currentCanvas) return;
+    currentCanvas.toBlob(async (blob) => {
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        setStatus('PNG copié dans le presse-papiers ✓');
+      } catch (err) {
+        console.error(err);
+        setStatus("Copie impossible dans ce navigateur : téléchargez le PNG à la place.", true);
+      }
+    }, 'image/png');
+  }
+
+  // Génère un premier QR au chargement, pour prévisualiser tout de suite.
+  window.addEventListener('DOMContentLoaded', generate);
+</script>
+</body>
+</html>
